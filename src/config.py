@@ -22,17 +22,12 @@ DATASET_FULL = DATASET_ROOT / "wgea_public_dataset_2025"
 DATASET_SAMPLE = DATASET_ROOT / "wgea_sample_5rows"
 
 DATA_DIR = PROJECT_ROOT / "data"
-DATA_EXTERNAL = DATA_DIR / "external"
 DATA_PROCESSED = DATA_DIR / "processed"
 CHECKPOINT_DIR = DATA_PROCESSED / "checkpoints"  # notebook-to-notebook handoffs
 
 OUTPUTS_DIR = PROJECT_ROOT / "outputs"
 FIG_DIR = OUTPUTS_DIR / "figures"
 TABLE_DIR = OUTPUTS_DIR / "tables"
-MODEL_DIR = OUTPUTS_DIR / "models"
-
-for _d in (DATA_EXTERNAL, DATA_PROCESSED, CHECKPOINT_DIR, FIG_DIR, TABLE_DIR, MODEL_DIR):
-    _d.mkdir(parents=True, exist_ok=True)
 
 # ---------------------------------------------------------------------------
 # Runtime switches
@@ -64,25 +59,26 @@ WGEA_FILES: dict[str, str] = {
     "questionnaire_catalogue": "wgea_questionnaire_catalogue_2025.csv",
 }
 
-EXTERNAL_ABS_FILE: Path = DATA_EXTERNAL / "abs_gender_pay_gap_by_industry.csv"
 
 # ---------------------------------------------------------------------------
 # Categorical encodings
 # ---------------------------------------------------------------------------
-# Confirmed from dataset samples; '5000+' included for full dataset.
-EMPLOYER_SIZE_ORDER: list[str] = ["<250", "250- 499", "500- 999", "1000- 4999", "5000+"]
+# Size bands as they appear verbatim in the WGEA CSVs (no spaces inside the ranges).
+EMPLOYER_SIZE_ORDER: list[str] = ["<250", "250-499", "500-999", "1000-4999", "5000+"]
 
-# Questionnaire question_index codes → short binary feature names.
-# These are the primary policy indicators aligned with Assessment 1 Section 4.1.
+# Questionnaire question *stems* → short binary feature names.
+# WGEA's schema splits each Yes/No question into two `question_index` branches:
+# `<stem>.Y` (employers who answered Yes) and `<stem>.N` (answered No).
+# `_extract_question_flag` uses the stem to read both branches and emit 1/0.
 QUESTIONNAIRE_FEATURE_MAP: dict[str, str] = {
     # Workplace overview — D&I policy
-    "DnI.FPS.N": "has_formal_dni_policy",
+    "DnI.FPS": "has_formal_dni_policy",
     # Action on gender equality — remuneration gap analysis actions
-    "EAct.Act.N": "took_action_on_pay_gap",
+    "EAct.Act": "took_action_on_pay_gap",
     # Employee support — employer-funded paid parental leave
-    "PPL.RegCarer.N": "has_employer_paid_parental_leave",
+    "PPL.RegCarer": "has_employer_paid_parental_leave",
     # Harm prevention — domestic violence formal policy
-    "DV.DV.N": "has_domestic_violence_policy",
+    "DV.DV": "has_domestic_violence_policy",
 }
 
 # Flexible-work question codes — presence of any response means that option is offered.

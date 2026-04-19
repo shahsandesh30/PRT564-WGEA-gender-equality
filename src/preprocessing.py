@@ -13,7 +13,6 @@ from __future__ import annotations
 import pandas as pd
 
 from .config import (
-    DATA_PROCESSED,
     FLEX_WORK_SECTION_NAME,
     QUESTIONNAIRE_FEATURE_MAP,
 )
@@ -108,36 +107,45 @@ def build_employer_master(data: dict[str, pd.DataFrame]) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 # Questionnaires → binary policy features
 # ---------------------------------------------------------------------------
-def _binary_from_yes(series: pd.Series) -> pd.Series:
-    """Map common questionnaire Yes/No responses to 1/0; other → NaN."""
-    s = series.astype(str).str.strip().str.lower()
-    out = pd.Series(pd.NA, index=series.index, dtype="Int64")
-    out[s == "yes"] = 1
-    out[s == "no"] = 0
-    return out
+def _extract_question_flag(df: pd.DataFrame, question_stem: str, feature_name: str) -> pd.Series:
+    """Build an employer-level 0/1 flag from a WGEA question stem.
 
-
-def _extract_question_flag(df: pd.DataFrame, question_code: str, feature_name: str) -> pd.Series:
-    """Pull a single Yes/No question_index into an employer-level binary flag."""
-    subset = df[df["question_index"].astype(str).str.strip() == question_code]
-    if subset.empty:
-        logger.warning("No rows for question_index=%s (feature=%s)", question_code, feature_name)
+    WGEA splits each Yes/No question into two `question_index` branches:
+    `<stem>.Y` (Yes) and `<stem>.N` (No). Some `.Y` branches fan out into
+    further sub-questions (e.g. `PPL.RegCarer.Y.Duration`), so we match by
+    prefix rather than exact equality.
+    """
+    idx = df["question_index"].astype(str).str.strip()
+    yes_abns = set(df.loc[idx.str.startswith(f"{question_stem}.Y"), "employer_abn"].dropna())
+    no_abns  = set(df.loc[idx.str.startswith(f"{question_stem}.N"), "employer_abn"].dropna())
+    if not (yes_abns or no_abns):
+        logger.warning("No rows for question stem=%s (feature=%s)", question_stem, feature_name)
         return pd.Series(dtype="Int64", name=feature_name)
-    binary = _binary_from_yes(subset["response"])
-    out = (
-        pd.DataFrame({"employer_abn": subset["employer_abn"].values, feature_name: binary.values})
-        .groupby("employer_abn")[feature_name]
-        .max()  # If multiple rows, 'Yes' dominates
-    )
+    # If an employer somehow appears in both branches, Yes dominates.
+    flags = {abn: 1 for abn in yes_abns}
+    for abn in no_abns - yes_abns:
+        flags[abn] = 0
+    out = pd.Series(flags, dtype="Int64", name=feature_name)
+    out.index.name = "employer_abn"
     return out
 
 
 def _flexible_work_flag(df: pd.DataFrame) -> pd.Series:
-    """Any flexible-work option offered → 1 (employer appears in flexible_work table)."""
+    """Employer offers ≥ 1 flexible-work option.
+
+    The flexible-work questionnaire records every respondent (including those
+    offering nothing), so presence alone isn't a signal. We flag an employer
+    as 1 if *any* of their rows land on a `.Y` question_index branch.
+    """
     if df.empty:
         return pd.Series(dtype="Int64", name="offers_flexible_work")
-    offers = df.groupby("employer_abn").size() > 0
-    return offers.astype("Int64").rename("offers_flexible_work")
+    idx = df["question_index"].astype(str).str.strip()
+    all_abns = set(df["employer_abn"].dropna())
+    yes_abns = set(df.loc[idx.str.contains(r"\.Y(\.|$)", regex=True), "employer_abn"].dropna())
+    flags = {abn: (1 if abn in yes_abns else 0) for abn in all_abns}
+    out = pd.Series(flags, dtype="Int64", name="offers_flexible_work")
+    out.index.name = "employer_abn"
+    return out
 
 
 def merge_questionnaires(master: pd.DataFrame, data: dict[str, pd.DataFrame]) -> pd.DataFrame:
@@ -153,9 +161,10 @@ def merge_questionnaires(master: pd.DataFrame, data: dict[str, pd.DataFrame]) ->
     ]
     for tbl_name in questionnaire_tables:
         df = data[tbl_name]
-        for q_code, feat_name in QUESTIONNAIRE_FEATURE_MAP.items():
-            if q_code in df["question_index"].astype(str).values:
-                features.append(_extract_question_flag(df, q_code, feat_name))
+        idx_values = df["question_index"].astype(str)
+        for stem, feat_name in QUESTIONNAIRE_FEATURE_MAP.items():
+            if idx_values.str.startswith(f"{stem}.").any():
+                features.append(_extract_question_flag(df, stem, feat_name))
 
     # Flexible work → single aggregated flag
     features.append(_flexible_work_flag(data["questionnaire_flexible_work"]))
@@ -165,23 +174,6 @@ def merge_questionnaires(master: pd.DataFrame, data: dict[str, pd.DataFrame]) ->
     merged = master.merge(feat_df, on="employer_abn", how="left")
     logger.info("After questionnaire merge: %d cols (%d policy features added)",
                 merged.shape[1], feat_df.shape[1] - 1)
-    return merged
-
-
-# ---------------------------------------------------------------------------
-# Heterogeneous integration
-# ---------------------------------------------------------------------------
-def integrate_external(master: pd.DataFrame, abs_df: pd.DataFrame | None) -> pd.DataFrame:
-    """Left-join industry-level ABS pay-gap data on anzsic_division."""
-    if abs_df is None:
-        logger.info("No external ABS data — skipping heterogeneous integration.")
-        return master
-    if "anzsic_division" not in abs_df.columns:
-        logger.warning("External ABS file missing anzsic_division — skipping.")
-        return master
-    merged = master.merge(abs_df, on="anzsic_division", how="left")
-    logger.info("Integrated external ABS features: new cols=%s",
-                [c for c in abs_df.columns if c != "anzsic_division"])
     return merged
 
 
@@ -204,14 +196,3 @@ def handle_missing(df: pd.DataFrame) -> pd.DataFrame:
         df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0).astype(int)
 
     return df
-
-
-def save_processed(df: pd.DataFrame) -> None:
-    out = DATA_PROCESSED / "employer_level.parquet"
-    try:
-        df.to_parquet(out, index=False)
-        logger.info("Saved processed employer-level table → %s", out)
-    except Exception as exc:  # pyarrow not installed etc.
-        csv_fallback = out.with_suffix(".csv")
-        df.to_csv(csv_fallback, index=False)
-        logger.warning("Parquet failed (%s); wrote CSV fallback → %s", exc, csv_fallback)

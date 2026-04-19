@@ -1,11 +1,12 @@
 """
-regression.py — RQ1 Multiple Linear Regression.
+regression.py — RQ1 Linear Regression (simple + multiple).
 
 Owner: Sandesh Shahi (Analysis Lead)
 
-Implements Assessment 1 Section 4.2. OLS is the primary model; Ridge is a
-comparator model used in evaluation.paired_t_test_cv for statistical
-significance testing (Assessment 2 rubric requirement 4).
+Implements Assessment 1 Section 4.2. A single fit helper is used for both
+the simple baseline (one predictor) and the full multiple-regression model
+(all predictors). Only scikit-learn's LinearRegression (OLS) is used — the
+method taught in Weeks 1 and 3.
 """
 
 from __future__ import annotations
@@ -17,7 +18,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy.stats as stats
-from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 
 from .config import FIG_DIR, RANDOM_SEED, TEST_SIZE
@@ -37,7 +38,11 @@ class RegressionResult:
 
 
 def fit_linear_regression(X: pd.DataFrame, y: pd.Series) -> RegressionResult:
-    """Fit OLS with an 80/20 split and the project random seed."""
+    """Fit OLS with an 80/20 split and the project random seed.
+
+    Works for both the Simple Linear Regression baseline (single column X)
+    and the Multiple Linear Regression full model (many-column X).
+    """
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=TEST_SIZE, random_state=RANDOM_SEED
     )
@@ -49,14 +54,8 @@ def fit_linear_regression(X: pd.DataFrame, y: pd.Series) -> RegressionResult:
     return RegressionResult(model, X_train, X_test, y_train, y_test, y_pred)
 
 
-def fit_ridge(X: pd.DataFrame, y: pd.Series, alpha: float = 1.0) -> Ridge:
-    """Comparator model for paired-CV t-test."""
-    model = Ridge(alpha=alpha, random_state=RANDOM_SEED)
-    model.fit(X, y)
-    return model
-
-
-def diagnostics(res: RegressionResult, out: Path = FIG_DIR) -> dict[str, Path]:
+def diagnostics(res: RegressionResult, out: Path = FIG_DIR,
+                prefix: str = "rq1") -> dict[str, Path]:
     """
     Produce residual-vs-fitted and Q-Q plots.
 
@@ -66,7 +65,6 @@ def diagnostics(res: RegressionResult, out: Path = FIG_DIR) -> dict[str, Path]:
     residuals = res.y_test.values - res.y_pred_test
     paths: dict[str, Path] = {}
 
-    # Residuals vs fitted
     fig, ax = plt.subplots(figsize=(6, 4.5))
     ax.scatter(res.y_pred_test, residuals, alpha=0.35, s=15, color="navy")
     ax.axhline(0, color="red", linestyle="--", linewidth=1)
@@ -74,17 +72,16 @@ def diagnostics(res: RegressionResult, out: Path = FIG_DIR) -> dict[str, Path]:
     ax.set_ylabel("Residuals")
     ax.set_title("OLS — Residuals vs Fitted (homoscedasticity check)")
     fig.tight_layout()
-    p = out / "rq1_residuals_vs_fitted.png"
+    p = out / f"{prefix}_residuals_vs_fitted.png"
     fig.savefig(p, dpi=150)
     plt.close(fig)
     paths["residuals_vs_fitted"] = p
 
-    # Q-Q plot
     fig, ax = plt.subplots(figsize=(6, 4.5))
     stats.probplot(residuals, dist="norm", plot=ax)
     ax.set_title("OLS — Q-Q plot (normality of residuals)")
     fig.tight_layout()
-    p = out / "rq1_qq_plot.png"
+    p = out / f"{prefix}_qq_plot.png"
     fig.savefig(p, dpi=150)
     plt.close(fig)
     paths["qq_plot"] = p

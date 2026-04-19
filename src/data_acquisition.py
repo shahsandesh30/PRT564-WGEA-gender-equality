@@ -1,5 +1,5 @@
 """
-data_acquisition.py — load + validate WGEA CSVs and external ABS source.
+data_acquisition.py — load.
 
 Owner: Shuvechchha Pun (Data Acquisition & Context Lead)
 
@@ -15,7 +15,6 @@ import pandas as pd
 
 from .config import (
     ACTIVE_DATA_DIR,
-    EXTERNAL_ABS_FILE,
     WGEA_FILES,
 )
 from .utils import get_logger
@@ -35,29 +34,6 @@ def load_wgea(data_dir: Path = ACTIVE_DATA_DIR) -> dict[str, pd.DataFrame]:
         logger.info("  %-45s %6d rows  %3d cols", short_name, len(df), df.shape[1])
         data[short_name] = df
     return data
-
-
-def load_external_abs(path: Path = EXTERNAL_ABS_FILE) -> pd.DataFrame | None:
-    """
-    Load the heterogeneous secondary source (industry-level indicator).
-
-    Expected schema (to be sourced from ABS / WGEA scorecard):
-      - anzsic_division : str (matches WGEA anzsic_division)
-      - industry_pay_gap : float (0-100, average gender pay gap %)
-
-    If the file is absent, returns None. main.py will then skip integration
-    but the primary WGEA analysis still runs.
-    """
-    if not path.exists():
-        logger.warning(
-            "External ABS file not found at %s — skipping heterogeneous integration. "
-            "Place a CSV with columns [anzsic_division, industry_pay_gap] there to enable.",
-            path,
-        )
-        return None
-    df = pd.read_csv(path)
-    logger.info("Loaded external ABS: %d rows, cols=%s", len(df), list(df.columns))
-    return df
 
 
 def validate(data: dict[str, pd.DataFrame]) -> None:
