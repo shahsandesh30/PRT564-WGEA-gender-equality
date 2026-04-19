@@ -6,7 +6,7 @@ Dataset: WGEA Public Data File 2025 (https://data.gov.au/data/dataset/wgea-datas
 > **Data folders** (`data/` and `Dataset/`) are excluded from this repo due to file size.
 > Download them from Google Drive: https://drive.google.com/file/d/1tG60DqyY-izVwYdzRwekNvRrJIxWn4lU/view?usp=sharing
 
-This repo implements the analysis pipeline planned in Assessment 1: linear regression (simple + multiple), classification (Naive Bayes), EDA, and statistical significance testing on the WGEA 2025 employer-level data. All methods are drawn from weeks 1–5 of the unit.
+This repo implements the analysis pipeline planned in Assessment 1: linear regression (simple + multiple), classification (Naive Bayes), EDA, and statistical significance testing on the WGEA 2025 employer-level data. 
 
 ## Team & module ownership
 
@@ -28,16 +28,14 @@ This repo implements the analysis pipeline planned in Assessment 1: linear regre
 
 ```
 project/
-├── Dataset/                                 # raw WGEA CSVs (not committed)
+├── Dataset/                                 # raw WGEA CSVs
 ├── data/
-│   ├── external/                            # heterogeneous source (ABS/WGEA industry CSV)
 │   └── processed/checkpoints/               # notebook-to-notebook handoffs
 ├── notebooks/                               # 01 → 08 staged pipeline
-├── src/                                     # analysis modules (see ownership above)
+├── src/                                     # analysis modules 
 ├── outputs/
 │   ├── figures/                             # PNGs for slides
 │   └── tables/                              # metric CSVs + t-test JSON
-├── presentation/                            # Marp slide deck source
 └── requirements.txt
 ```
 
@@ -73,24 +71,3 @@ Each notebook is self-contained: if you only change step 05, you only need to re
 - `outputs/tables/metrics_summary.csv` — headline numbers
 - `outputs/tables/paired_ttest_results.json` — hypothesis-test results
 - `outputs/tables/rq1_vif.csv` — multicollinearity check
-
-## Heterogeneous data integration
-
-Drop a CSV at `data/external/abs_gender_pay_gap_by_industry.csv` with columns:
-
-| anzsic_division                               | industry_pay_gap |
-|-----------------------------------------------|------------------|
-| Financial and Insurance Services              | 22.7             |
-| Health Care and Social Assistance             | 17.4             |
-
-The pipeline auto-detects and left-joins it on `anzsic_division`. If absent, the pipeline still runs on WGEA data alone. See `data/external/README.md` for sourcing notes.
-
-## Rubric → module map
-
-| Assessment 2 rubric component                    | Where it lives                                        |
-|--------------------------------------------------|-------------------------------------------------------|
-| 1. Preprocessing + heterogeneous integration     | `02_preprocessing.ipynb`, `src/preprocessing.py`      |
-| 2. EDA                                           | `04_eda.ipynb`, `src/eda.py`                          |
-| 3. Regression with justification                 | `05_regression.ipynb`, `src/regression.py`            |
-| 4. Evaluation + statistical tests                | `07_statistical_tests.ipynb`, `src/evaluation.py` (`paired_t_test_cv`) |
-| 5. Presentation artefacts                        | `08_reporting.ipynb`, `presentation/slides.md`        |
