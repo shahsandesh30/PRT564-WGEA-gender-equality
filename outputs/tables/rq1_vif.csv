@@ -1,21 +1,25 @@
 feature,vif
-div_Health Care and Social Assistance,2.720928306571023
-"div_Professional, Scientific and Technical Services",2.4393098719626716
-div_Manufacturing,2.286341370799546
-div_Education and Training,2.0825060618349776
-div_Retail Trade,1.7940109407190985
-div_Wholesale Trade,1.7466044534199998
-div_Administrative and Support Services,1.7344343445814527
-div_Construction,1.6878196714629887
-div_Financial and Insurance Services,1.6413903732976487
-"div_Transport, Postal and Warehousing",1.5543861859115344
-div_Other Services,1.4083574362673699
-div_Mining,1.4069701227030387
-div_Arts and Recreation Services,1.2829667385205132
-div_Information Media and Telecommunications,1.278031004632387
-"div_Rental, Hiring and Real Estate Services",1.1918555528843184
-"div_Agriculture, Forestry and Fishing",1.1701667813797083
-"div_Electricity, Gas, Water and Waste Services",1.1616093002144632
-div_Public Administration and Safety,1.1008713036851823
-employer_size_ord,1.0051442446151764
-offers_flexible_work,1.00175522687198
+div_Health Care and Social Assistance,2.800204781269056
+"div_Professional, Scientific and Technical Services",2.641149668113045
+div_Manufacturing,2.320709688471446
+div_Education and Training,2.2386505257862646
+div_Retail Trade,1.8182951578968665
+div_Wholesale Trade,1.7805235064105223
+div_Administrative and Support Services,1.7438429778433975
+div_Financial and Insurance Services,1.7370268949709635
+div_Construction,1.72586583786027
+"div_Transport, Postal and Warehousing",1.5777955080211696
+div_Mining,1.4530476767002094
+div_Other Services,1.428685388696494
+took_action_on_pay_gap,1.3654780787641092
+has_employer_paid_parental_leave,1.3159659641638293
+div_Information Media and Telecommunications,1.308362148613591
+div_Arts and Recreation Services,1.304675894199241
+offers_flexible_work,1.2532138001681994
+"div_Rental, Hiring and Real Estate Services",1.2031750897078721
+has_domestic_violence_policy,1.1861853700549425
+"div_Electricity, Gas, Water and Waste Services",1.180083059984206
+"div_Agriculture, Forestry and Fishing",1.176785934908607
+has_formal_dni_policy,1.1665294234757273
+div_Public Administration and Safety,1.1028839710464118
+employer_size_ord,1.0972626033278525
