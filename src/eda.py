@@ -3,8 +3,8 @@ eda.py — exploratory data analysis and assumption diagnostics.
 
 Owner: Pujan Dey (Visualisation & Reporting Lead)
 
-Covers Assessment 2 rubric requirement 2 (EDA) and supports the linear
-regression assumption checks from Assessment 1 Section 4.2.
+Covers EDA and supports the linear
+regression assumption checks.
 """
 
 from __future__ import annotations

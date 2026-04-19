@@ -3,8 +3,8 @@ evaluation.py — metrics, assumption diagnostics, and statistical tests.
 
 Owner: Sandesh Shahi (Analysis Lead)
 
-Metric choices tie directly to Assessment 1 Sections 4.2/4.3 and justify the
-statistical rationale required by Assessment 2 rubric item 4:
+Metric choices that justify the
+statistical rationale required for the project:
 
   * MAE  — robust to outliers, interpretable on the same scale as y.
   * RMSE — penalises large errors; relevant because management proportions

@@ -3,8 +3,7 @@ data_acquisition.py — load.
 
 Owner: Shuvechchha Pun (Data Acquisition & Context Lead)
 
-Corresponds to Assessment 1 Section 2 (Dataset Description) and Assessment 2
-rubric requirement 1 (data collection — potentially from multiple sources).
+Corresponds to Dataset Description and (data collection.
 """
 
 from __future__ import annotations

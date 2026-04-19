@@ -3,7 +3,6 @@ preprocessing.py — cleaning, merging, and heterogeneous integration.
 
 Owner: Aadarsh Ghimire (Preprocessing & Research Design Lead)
 
-Corresponds to Assessment 1 Section 4.1 and Assessment 2 rubric requirement 1.
 Builds a single employer-level master table keyed on employer_abn, integrating
 workforce composition, management movements, and five questionnaire tables.
 """

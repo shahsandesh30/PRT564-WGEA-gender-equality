@@ -3,8 +3,8 @@ classification.py — RQ2 Gaussian Naive Bayes + majority-class baseline.
 
 Owner: Sandesh Shahi (Analysis Lead)
 
-Implements Assessment 1 Section 4.3 (simplified). Naive Bayes is the working
-model; the majority-class baseline is the comparator for the paired-CV
+Naive Bayes is the workingmodel; 
+the majority-class baseline is the comparator for the paired-CV
 t-test that satisfies Assessment 2 rubric item 4.
 """
 

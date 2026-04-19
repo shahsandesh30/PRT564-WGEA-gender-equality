@@ -3,10 +3,9 @@ regression.py — RQ1 Linear Regression (simple + multiple).
 
 Owner: Sandesh Shahi (Analysis Lead)
 
-Implements Assessment 1 Section 4.2. A single fit helper is used for both
+A single fit helper is used for both
 the simple baseline (one predictor) and the full multiple-regression model
-(all predictors). Only scikit-learn's LinearRegression (OLS) is used — the
-method taught in Weeks 1 and 3.
+(all predictors). Only scikit-learn's LinearRegression (OLS) is used.
 """
 
 from __future__ import annotations

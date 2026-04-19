@@ -3,8 +3,7 @@ feature_engineering.py — targets and encoded feature matrix.
 
 Owner: Aadarsh Ghimire (Preprocessing & Research Design Lead)
 
-Creates the continuous and binary targets declared in Assessment 1 Sections 4.2
-and 4.3, and returns the encoded X matrix ready for scikit-learn.
+Creates the continuous and binary targets and returns the encoded X matrix ready for scikit-learn.
 """
 
 from __future__ import annotations
