@@ -3,8 +3,8 @@ evaluation.py — metrics, assumption diagnostics, and statistical tests.
 
 Owner: Sandesh Shahi (Analysis Lead)
 
-Metric choices that justify the
-statistical rationale required for the project:
+Metric choices tie directly to Assessment 1 Sections 4.2/4.3 and justify the
+statistical rationale required by Assessment 2 rubric item 4:
 
   * MAE  — robust to outliers, interpretable on the same scale as y.
   * RMSE — penalises large errors; relevant because management proportions
@@ -96,35 +96,27 @@ def paired_t_test_cv(
     higher_is_better: bool = True,
     name_a: str = "A",
     name_b: str = "B",
-    X_b: pd.DataFrame | None = None,
 ) -> dict:
     """
     Run k-fold CV for two models on identical folds, then scipy.stats.ttest_rel.
 
-    scoring_fn(y_true, y_pred) -> float. For regression pass e.g. mean_absolute_error
-    (with higher_is_better=False) or r2_score; for classification pass accuracy_score.
-
-    If X_b is supplied, model_b is trained/tested on that feature matrix instead of X.
-    Useful when comparing a simple baseline (fewer features) against a full model on the
-    same row indices and same folds.
+    scoring_fn(y_true, y_pred) -> float. For regression pass e.g. r2_score
+    or a negated RMSE; for classification pass accuracy_score or f1_score.
     """
     cv = (StratifiedKFold(n_splits=CV_FOLDS, shuffle=True, random_state=RANDOM_SEED)
           if stratify else
           KFold(n_splits=CV_FOLDS, shuffle=True, random_state=RANDOM_SEED))
 
-    X_b = X if X_b is None else X_b
-    if len(X_b) != len(X):
-        raise ValueError("X and X_b must share the same row index length for paired testing.")
-
     scores_a, scores_b = [], []
     y_arr = np.asarray(y)
     for train_idx, test_idx in cv.split(X, y_arr):
+        X_tr, X_te = X.iloc[train_idx], X.iloc[test_idx]
         y_tr, y_te = y_arr[train_idx], y_arr[test_idx]
 
-        ma = clone(model_a).fit(X.iloc[train_idx], y_tr)
-        mb = clone(model_b).fit(X_b.iloc[train_idx], y_tr)
-        scores_a.append(scoring_fn(y_te, ma.predict(X.iloc[test_idx])))
-        scores_b.append(scoring_fn(y_te, mb.predict(X_b.iloc[test_idx])))
+        ma = clone(model_a).fit(X_tr, y_tr)
+        mb = clone(model_b).fit(X_tr, y_tr)
+        scores_a.append(scoring_fn(y_te, ma.predict(X_te)))
+        scores_b.append(scoring_fn(y_te, mb.predict(X_te)))
 
     scores_a, scores_b = np.array(scores_a), np.array(scores_b)
     t_stat, p_val = stats.ttest_rel(scores_a, scores_b)

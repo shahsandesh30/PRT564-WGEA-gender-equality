@@ -1,0 +1,29 @@
+feature
+has_formal_dni_policy
+took_action_on_pay_gap
+has_employer_paid_parental_leave
+has_domestic_violence_policy
+offers_flexible_work
+employer_size_ord
+policy_count
+log_total_employees
+division_mean_women_share
+size_x_division_women_share
+div_Administrative and Support Services
+"div_Agriculture, Forestry and Fishing"
+div_Arts and Recreation Services
+div_Construction
+div_Education and Training
+"div_Electricity, Gas, Water and Waste Services"
+div_Financial and Insurance Services
+div_Health Care and Social Assistance
+div_Information Media and Telecommunications
+div_Manufacturing
+div_Mining
+div_Other Services
+"div_Professional, Scientific and Technical Services"
+div_Public Administration and Safety
+"div_Rental, Hiring and Real Estate Services"
+div_Retail Trade
+"div_Transport, Postal and Warehousing"
+div_Wholesale Trade

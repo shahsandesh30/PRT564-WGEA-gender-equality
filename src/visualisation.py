@@ -61,6 +61,19 @@ def plot_predicted_vs_actual(y_true: np.ndarray, y_pred: np.ndarray,
     return path
 
 
+def plot_feature_importance(importances: pd.DataFrame, out: Path = FIG_DIR) -> Path:
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.barh(importances["feature"][::-1], importances["importance"][::-1], color="darkorange")
+    ax.set_xlabel("Feature importance (Gini)")
+    ax.set_title("RQ2 — Random Forest feature importance")
+    fig.tight_layout()
+    path = out / "rq2_feature_importance.png"
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
+    logger.info("Saved %s", path.name)
+    return path
+
+
 def plot_confusion_matrix(cm: np.ndarray, out: Path = FIG_DIR,
                           labels: tuple[str, str] = ("Low", "High")) -> Path:
     fig, ax = plt.subplots(figsize=(5, 4))
@@ -68,7 +81,7 @@ def plot_confusion_matrix(cm: np.ndarray, out: Path = FIG_DIR,
                 xticklabels=labels, yticklabels=labels, cbar=False)
     ax.set_xlabel("Predicted")
     ax.set_ylabel("Actual")
-    ax.set_title("RQ2 — Confusion matrix (Naive Bayes)")
+    ax.set_title("RQ2 — Confusion matrix (Random Forest)")
     fig.tight_layout()
     path = out / "rq2_confusion_matrix.png"
     fig.savefig(path, dpi=150)
